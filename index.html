@@ -1,0 +1,176 @@
+<html>
+  <head>
+		<title>Vue Mailer</title>
+		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+		<link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+  </head>
+  <body>
+
+    <div id="app" class="o-wrapper">
+
+			<img v-if="login !== 3" src="imgs/email.png" class="c-logo">
+
+			<div id="login" class="o-box u-w600 u-center u-margin100" v-if="login === 1">
+				<form v-on:submit.prevent="onLogin" action="app/login.php" method="get">
+					<!-- <input type="text" v-model="email" placeholder="No email required" disabled> -->
+					<input type="password" v-model="password" placeholder="Password" required>
+					<button>Login</button> or <span @click="switch_forms" class="c-text-btn">Register</span>
+					<p v-if="error.active" class="u-error">{{ error.msg }}<p>
+				</form>
+			</div>
+
+			<div id="register" class="o-box u-w600 u-center u-margin100" v-else-if="login === 0">
+				<p>Sorry by at this time our service is private.</p>
+				<span @click="switch_forms" class="c-text-btn">Go Back</span>
+			</div>
+
+			<div id="main" class="o-box u-center u-text-left u-half-width" v-else-if="login === 3">
+
+				<div class="o-flex-box u-box-fix">
+					<h6 class="o-title">From</h6>
+					<input v-model="from" type="text" class="c-cornered-field u-full-width" placeholder="Email Address">
+
+					<h6 class="o-title">To</h6>
+					<input @keydown.enter="addEmail" v-model="cur_email" type="text" class="c-cornered-field u-full-width" placeholder="Email Address">
+
+					<div id="emailContainer" class="c-email-container">
+						<div v-if="email_list.length == 0" class="c-email-item">No emails added.</div>
+						<div v-for="(email, key) in email_list" class="c-email-item">
+							{{email}}
+							<span class="c-email-item-delete" v-on:click="removeEmail(key)">x</span>
+						</div>
+					</div>
+
+					<h6 class="o-title">Subject</h6>
+					<input v-model="subject" type="text" class="c-cornered-field u-full-width" placeholder="Email Title">
+
+				</div>
+
+				<div class="o-box">
+					<h6 class="o-title">Email Template</h6>
+					<div id="codeConatiner" class="o-flex-box">
+						<select>
+							<option value="blank" selected>Blank Email Template</option>
+							<option v-for="template in email_templates">{{template}}</option>
+						</select>
+						<textarea id="codeContainer-textarea" v-model="email_code" class="c-code-container" placeholder="Email body code. Handtype or select from the template above.">
+						</textarea>
+					</div>
+
+					<p v-if="email_code == ''">Nothing to display.</p>
+					<h6 class="o-title" v-else>Preview</h6>
+					<div v-if="email_code != ''" v-html="email_code" id="previewContainer" class="o-flex-box u-full-width c-preview-container">
+					</div>
+
+				</div>
+
+				<span v-if="login === 3" @click="onLogout" class="c-text-btn">Logout</span>
+			</div>
+
+    </div>
+
+    <script src="js/vue.js"></script>
+		<script src="js/vue-resource.min.js"></script>
+		<script src="js/jquery-3.2.1.min.js"></script>
+    <script>
+
+		String.prototype.rtrim = function(s) {
+		    return this.replace(new RegExp(s + "*$"),'');
+		};
+
+			// check login
+      var vm = new Vue({
+        el: '#app',
+        data: {
+          login: 1,
+					email: "",
+					password: "",
+					email_list: new Array(),
+					email_templates: new Array(),
+					email_code: "",
+					from:"",
+					subject:"",
+					cur_email: "",
+					error: { active:false, msg:"Invalid details. Try again!" }
+        },
+				created: function() {
+					this.$http.get('app/login.php?check').then(response => {
+						if (response.status == 200) {
+							this.reset_login(3)
+						}
+					});
+				},
+				methods: {
+					reset_login: function(view) {
+						this.login = view;
+						this.email = null;
+						this.password = null;
+					},
+					switch_forms: function () {
+						if (this.login == 1) { this.login = 0; }
+						else if (this.login == 0) { this.login = 1; }
+						this.error.active = false;
+					},
+					onLogin: function() {
+						this.$http.post('app/login.php?login', {
+							email: this.email,
+							password: this.password
+						}).then(response => {
+							if (response.status == 200) {
+								this.reset_login(3)
+							} else {
+								this.error.active = true;
+								setTimeout(function() {
+									vm.error.active = false;
+								}, 5000);
+							}
+						});
+					},
+					onLogout: function() {
+						this.$http.get('app/logout.php').then(response => {
+							if (response.status == 200) {
+								this.reset_login(1)
+							}
+						});
+					},
+					addEmail: function() {
+						if (this.cur_email != '') {
+							this.email_list.splice(0, 0, this.cur_email);
+							this.cur_email = "";
+						}
+					},
+					removeEmail: function(index) {
+						this.email_list.splice(index, 1);
+					}
+				}
+      });
+
+			$(function() {
+				$(document).on('keydown', 'textarea', function(e) {
+			    if(e.keyCode === 9) {
+		        var start = this.selectionStart;
+		        var end = this.selectionEnd;
+		        var $this = $(this);
+		        var value = $this.val();
+		        $this.val(value.substring(0, start)
+		                    + "\t"
+		                    + value.substring(end));
+		        this.selectionStart = this.selectionEnd = start + 1;
+		        e.preventDefault();
+			    } else if (e.keyCode === 13 && e.shiftKey) {
+						var start = this.selectionStart;
+		        var end = this.selectionEnd;
+		        var $this = $(this);
+		        var value = $this.val();
+		        $this.val(value.substring(0, start)
+		                    + "<br>"
+		                    + value.substring(end));
+		        this.selectionStart = this.selectionEnd = start + 4;
+		        e.preventDefault();
+					}
+				});
+			});
+    </script>
+
+  </body>
+</html>
