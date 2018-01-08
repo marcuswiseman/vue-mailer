@@ -68,7 +68,7 @@ function get_post () {
 	return isset($json) ? json_decode($json) : null;
 }
 
-function encrypt_string ($string, $key = '@Ev0lut1on832!') {
+function encrypt_string ($string, $key = '@Un1c0rns!') {
 	$secret_key = $key;
 	$secret_iv = $key;
 	$output = false;
@@ -78,7 +78,7 @@ function encrypt_string ($string, $key = '@Ev0lut1on832!') {
 	return base64_encode( openssl_encrypt( $string, $encrypt_method, $key, 0, $iv ) );
 }
 
-function decrypt_string ($string, $key = '@Ev0lut1on832!') {
+function decrypt_string ($string, $key = '@Un1c0rns!') {
 	$secret_key = $key;
 	$secret_iv = $key;
 	$output = false;
