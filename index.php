@@ -249,7 +249,7 @@ if($_SERVER["HTTPS"] != "on") {
 			</div>
 
 			<!-- FOOTER -->
-			<footer><b>Copyright ©</b> Bloomin' Buds | <b>Author</b> Marcus Wiseman | 2017 - 2018 </footer>
+			<footer><b>Copyright © <b>Author</b> Marcus Wiseman | 2017 - 2018 | Open Source | GitHub: marcuswiseman/vue-mailer</footer>
     </div>
 
 	<!-- SCRIPTS -->
