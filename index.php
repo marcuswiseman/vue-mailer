@@ -229,8 +229,6 @@ if($_SERVER["HTTPS"] != "on") {
 						<p v-if="email_code == ''">Nothing to display.</p>
 						<iframe v-if="email_code != ''" v-bind:srcdoc="email_code" id="previewContainer" class="o-flex-box c-preview-container"></iframe>
 						<br>
-						<span v-if="login === 3" @click="onLogout" class="c-text-btn u-pull-up">Logout</span>
-
 						<button v-if="login === 3 && !verify_required && !smtp_setup" @click="send_all" class="u-snd-btn">
 							<span v-if="!send_loading"><i class="fab fa-telegram-plane fa-lg"></i></span>
 							<span v-else><img src="imgs/loading.gif"></span>
@@ -241,7 +239,7 @@ if($_SERVER["HTTPS"] != "on") {
 							<span v-else><img src="imgs/loading.gif"></span>
 						</button>
 
-						<span class="u-snd-btn u-check-fix" v-if="login === 3 && !verify_required && !smtp_setup"><input type="checkbox" v-model="send_indiv">Send emails separately</span>
+						<span class="u-snd-btn u-check-fix" v-if="login === 3 && !verify_required && !smtp_setup"><input type="checkbox" v-model="send_indiv">Send separately</span></br>
 					</div>
 
 				</div>
@@ -249,7 +247,7 @@ if($_SERVER["HTTPS"] != "on") {
 			</div>
 
 			<!-- FOOTER -->
-			<footer><b>Copyright © <b>Author</b> Marcus Wiseman | 2017 - 2018 </footer>
+			<footer><b>Copyright © <b>Author</b> Wise Web Solutions | 2017 - 2018 <span v-if="login === 3" @click="onLogout" class="c-text-btn">Logout</span></footer>
     </div>
 
 	<!-- SCRIPTS -->

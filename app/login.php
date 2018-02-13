@@ -6,9 +6,9 @@ use PHPMailer\PHPMailer\Exception;
 
 function prepare_user () {
 	global $DB;
-	$user = $DB->select('tbl_users', ['id', 'email', 'company_name', 'temp_password', 'login_token', 'ip_address', 'date_verified', 'smtp_host', 'smtp_username', 'smtp_password', 'smtp_port', 'smtp_ssl'], ['id' => $_SESSION['login']]);
-	$email_lists = $DB->select('tbl_users_email_lists', ['id', 'name'], ['user_id' => $_SESSION['login'], 'date_deleted' => NULL]);
-	$templates = $DB->select('tbl_users_email_templates', ['id', 'name', 'template'], ['user_id' => $_SESSION['login'], 'date_deleted' => NULL]);
+	$user = $DB->select('tbl_users', ['id', 'email', 'company_name', 'temp_password', 'login_token', 'ip_address', 'date_verified', 'smtp_host', 'smtp_username', 'smtp_password', 'smtp_port', 'smtp_ssl'], ['id' => $_COOKIE['login']]);
+	$email_lists = $DB->select('tbl_users_email_lists', ['id', 'name'], ['user_id' => $_COOKIE['login'], 'date_deleted' => NULL]);
+	$templates = $DB->select('tbl_users_email_templates', ['id', 'name', 'template'], ['user_id' => $_COOKIE['login'], 'date_deleted' => NULL]);
 	
 	$history = $DB->query(
 		"SELECT 
@@ -25,7 +25,7 @@ function prepare_user () {
 		 WHERE <logs.user_id> = :user_id
 		 ORDER BY logs.date_attempt DESC
 		 LIMIT 200", [
-			 ':user_id' => $_SESSION['login']
+			 ':user_id' => $_COOKIE['login']
 		]
 	)->fetchAll();
 
@@ -37,14 +37,19 @@ function prepare_user () {
 		$user[0]['temp_password'] = false; 
 	}
 
-	if ($user[0]['smtp_ssl'] == 1) { 
+	if (isset($user[0]['smtp_ssl']) && $user[0]['smtp_ssl'] == 1) { 
 		$user[0]['smtp_ssl'] = true; 
 	} else { 
 		$user[0]['smtp_ssl'] = false; 
 	}
 
-	$user[0]['smtp_username'] = decrypt_string($user[0]['smtp_username']);
-	$user[0]['smtp_password'] = decrypt_string($user[0]['smtp_password']);
+	if (isset($user[0]['smtp_username'])) {
+		$user[0]['smtp_username'] = decrypt_string($user[0]['smtp_username']);
+	}
+
+	if (isset($user[0]['smtp_password'])) {
+		$user[0]['smtp_password'] = decrypt_string($user[0]['smtp_password']);
+	}
 
 	if (isset($email_lists)) { $user['available_email_lists'] = $email_lists; }
 	if (isset($templates)) { $user['templates'] = $templates; }
@@ -53,17 +58,17 @@ function prepare_user () {
 }
 
 if (isset($_GET['check'])) {
-	if (isset($_SESSION['login']) && isset($_SESSION['token'])) {
+	if (isset($_COOKIE['login']) && isset($_COOKIE['token'])) {
 		$user = prepare_user();
-		if ($user[0]['login_token'] != $_SESSION['token']) { http_response_code(201); die(); }
-		if ($user[0]['ip_address'] != get_client_ip()) { http_response_code(201); die(); }
+		if ($user[0]['login_token'] != $_COOKIE['token']) { http_response_code(201); die('NOTICE #1'); }
+		if ($user[0]['ip_address'] != get_client_ip()) { http_response_code(201); die('NOTICE #2'); }
 		if (isset($user)) {
 			http_response_code(200); die(json_encode($user));
 		} else { 
-			http_response_code(201); die();
+			http_response_code(201); die('NOTICE #3');
 		}
 	} else {
-		http_response_code(201); die();
+		http_response_code(201); die('NOTICE #4');
 	}
 }
 
@@ -90,11 +95,17 @@ _HTML_;
 			$sent = internal_mail('Your Account is Locked', $body, $data->email); 
 			http_response_code(202); die(); 
 		}
-		$_SESSION['login'] = $check['id'];
+
+		setcookie('login', '', 1, '/');
+		setcookie('token', '', 1, '/');
+
+		setcookie('login', $check['id'], time()+2678400, '/');
 		$token = gen_token(32);
+		setcookie('token', $token, time()+2678400, '/');
+
 		$DB->update('tbl_users', ['login_attempts' => 0, 'login_token' => $token, 'ip_address' => get_client_ip()], ['id' => $check['id']]);
-		$_SESSION['token'] = $token;
 		$user = prepare_user();
+		
 		if ($user)	{
 			http_response_code(200); die(json_encode($user));
 		} else {

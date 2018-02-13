@@ -58,6 +58,22 @@ if ($action == "unlock_account") {
 	}
 }
 
+if ($action == "api") {
+	$secret_key = $DB->get("tbl_users", '*', [
+		'secret_key' => $_GET['key']
+	]);
+	if ($secret_key) {
+		$insert = $DB->insert('tbl_users_email_addresses', [
+			'list_id' => $_GET['list'],
+			'user_id' => $secret_key['user_id'],
+			'email' => encrypt_string(htmlspecialchars($_POST['email']))
+		]);
+		if ($insert) { http_response_code(200); die(json_encode(['id' => $DB->id()])); } else { http_response_code(202); die(); }
+	} else {
+		die('Not authorised to perform this action');
+	}
+}
+
 /* ------------------------ LOGGED IN ONLY FUNCTIONS ------------------------ */
 logged_in();
 
@@ -70,12 +86,12 @@ if ($action == "new_password") {
 
 	$check = $DB->get("tbl_users", '*', [
 		'password' => encrypt_string($data->old_password), 
-		'id' => $_SESSION['login']
+		'id' => $_COOKIE['login']
 	]);
 
 	$check2 = $DB->get("tbl_users", '*', [
 		'temp_password' => encrypt_string($data->old_password),
-		'id' => $_SESSION['login']
+		'id' => $_COOKIE['login']
 	]);
 
 	if ($check2) { $check = $check2; }
@@ -85,7 +101,7 @@ if ($action == "new_password") {
 			'password' => encrypt_string($data->new_password), 
 			'temp_password' => null
 		], [
-			'id' => $_SESSION['login']
+			'id' => $_COOKIE['login']
 		]);
 		http_response_code(200); die();
 	} else {
@@ -95,13 +111,13 @@ if ($action == "new_password") {
 
 # VERIFY VERIFICATION CODE
 if ($action == "verify_code") {
-	$check = $DB->get('tbl_users', 'verification_code', ['id' => $_SESSION['login'], 'login_token' => $_SESSION['token'], 'verification_code' => $data->code]);
+	$check = $DB->get('tbl_users', 'verification_code', ['id' => $_COOKIE['login'], 'login_token' => $_COOKIE['token'], 'verification_code' => $data->code]);
 	echo $DB->last();
 	if ($check) {
 		$DB->update('tbl_users', [
 			'date_verified' => date("Y-m-d H:i:s")
 		], [
-			'id' => $_SESSION['login']
+			'id' => $_COOKIE['login']
 		]);
 		http_response_code(200); die();
 	} else {
@@ -111,13 +127,14 @@ if ($action == "verify_code") {
 	
 # NEW VERIFICATION CODE
 if ($action == "new_verify_code") {
+	set_time_limit(300);
 	$verification_code = gen_token(8);
 	$DB->update('tbl_users', [
 		'verification_code' => $verification_code
 	],[
-		'id' => $_SESSION['login']
+		'id' => $_COOKIE['login']
 	]);
-	$user_email = $DB->get('tbl_users', 'email', ['id' => $_SESSION['login']]);
+	$user_email = $DB->get('tbl_users', 'email', ['id' => $_COOKIE['login']]);
 	$body = <<<_HTML_
 		Hello,<br></br><br>
 
@@ -139,10 +156,10 @@ _HTML_;
 
 # NEW EMAIL LIST
 if ($action == "new_email_list") {
-	$check = $DB->select('tbl_users_email_lists', '*', ['name' => $data->name, 'user_id' => $_SESSION['login'], 'date_deleted' => NULL]);
+	$check = $DB->select('tbl_users_email_lists', '*', ['name' => $data->name, 'user_id' => $_COOKIE['login'], 'date_deleted' => NULL]);
 	if (!$check) {
 		$DB->insert('tbl_users_email_lists', [
-			'user_id' => $_SESSION['login'],
+			'user_id' => $_COOKIE['login'],
 			'name' => htmlspecialchars($data->name)
 		]);
 		http_response_code(200); die(json_encode( ['id' => $DB->id()] ));
@@ -153,10 +170,10 @@ if ($action == "new_email_list") {
 
 # NEW TEMPLATE
 if ($action == "new_template") {
-	$check = $DB->select('tbl_users_email_templates', '*', ['name' => $data->name, 'user_id' => $_SESSION['login'], 'date_deleted' => NULL]);
+	$check = $DB->select('tbl_users_email_templates', '*', ['name' => $data->name, 'user_id' => $_COOKIE['login'], 'date_deleted' => NULL]);
 	if (!$check) {
 		$DB->insert('tbl_users_email_templates', [
-			'user_id' => $_SESSION['login'],
+			'user_id' => $_COOKIE['login'],
 			'name' => htmlspecialchars($data->name)
 		]);
 		http_response_code(200); die(json_encode( ['id' => $DB->id()] ));
@@ -171,7 +188,7 @@ if ($action == "delete_template") {
 		'date_deleted' => date("Y-m-d H:i:s")
 	], [
 		'id' => $data->id,
-		'user_id' => $_SESSION['login']
+		'user_id' => $_COOKIE['login']
 	]);
 	if ($update_template) { http_response_code(200); die(); } else { http_response_code(202); die(); }
 }
@@ -182,7 +199,7 @@ if ($action == "get_template") {
 		['id', 'template'],
 		[
 			'id' => $data->id,
-			'user_id' => $_SESSION['login'],
+			'user_id' => $_COOKIE['login'],
 			'date_deleted' => NULL,
 			'LIMIT' => 1
 		]
@@ -201,7 +218,7 @@ if ($action == "save_template") {
 		'template' => htmlspecialchars($data->template)
 	], [
 		'id' => $data->id,
-		'user_id' => $_SESSION['login']
+		'user_id' => $_COOKIE['login']
 	]);
 	echo $DB->last();
 	if ($update_template) { http_response_code(200); die(); } else { http_response_code(202); die(); }
@@ -213,13 +230,13 @@ if ($action == "delete_email_list") {
 		'date_deleted' => date("Y-m-d H:i:s")
 	], [
 		'id' => $data->list_id,
-		'user_id' => $_SESSION['login']
+		'user_id' => $_COOKIE['login']
 	]);
 	$update_address = $DB->update('tbl_users_email_addresses', [
 		'date_deleted' => date("Y-m-d H:i:s")
 	], [
 		'list_id' => $data->list_id,
-		'user_id' => $_SESSION['login']
+		'user_id' => $_COOKIE['login']
 	]);
 	if ($update_list) { http_response_code(200); die(); } else { http_response_code(202); die(); }
 }
@@ -230,7 +247,7 @@ if ($action == "get_email_list") {
 		['id', 'email'],
 		[
 			'list_id' => $data->id,
-			'user_id' => $_SESSION['login'],
+			'user_id' => $_COOKIE['login'],
 			'date_deleted' => NULL,
 			'ORDER' => ['date_added' => 'DESC']
 		]
@@ -249,7 +266,7 @@ if ($action == "get_email_list") {
 if ($action == "add_email") {
 	$insert = $DB->insert('tbl_users_email_addresses', [
 		'list_id' => $data->id,
-		'user_id' => $_SESSION['login'],
+		'user_id' => $_COOKIE['login'],
 		'email' => encrypt_string(htmlspecialchars($data->email))
 	]);
 	if ($insert) { http_response_code(200); die(json_encode(['id' => $DB->id()])); } else { http_response_code(202); die(); }
@@ -262,7 +279,7 @@ if ($action == "remove_email") {
 	], [
 		'id' => $data->index_id,
 		'list_id' => $data->list_id,
-		'user_id' => $_SESSION['login']
+		'user_id' => $_COOKIE['login']
 	]);
 	if ($update) { http_response_code(200); die(); } else { http_response_code(202); die(); }
 }
@@ -272,12 +289,12 @@ if ($action == "send_preview") {
 	if (is_verified()) {
 		$template = $DB->get('tbl_users_email_templates', 'template', [
 			'id' => $data->template_id, 
-			'user_id' => $_SESSION['login']
+			'user_id' => $_COOKIE['login']
 		]);
 		$DB->update('tbl_users', [
 			'company_name' => htmlspecialchars($data->company_name)
 		], [
-			'id' => $_SESSION['login']
+			'id' => $_COOKIE['login']
 		]);
 		if (external_mail(true, false, $data->from, $data->company_name, [0 => $data->from], $data->subject, $template, $data->template_id, null)) {
 			http_response_code(200); die(); 
@@ -294,17 +311,17 @@ if ($action == "send_all") {
 	if (is_verified()) {
 		$template = $DB->get('tbl_users_email_templates', 'template', [
 			'id' => $data->template_id, 
-			'user_id' => $_SESSION['login']
+			'user_id' => $_COOKIE['login']
 		]);
 		$email_list = $DB->select('tbl_users_email_addresses', 'email', [
 			'list_id'=>$data->to, 
-			'user_id'=>$_SESSION['login'],
+			'user_id'=>$_COOKIE['login'],
 			'date_deleted'=>null
 		]);
 		$DB->update('tbl_users', [
 			'company_name' => htmlspecialchars($data->company_name)
 		], [
-			'id' => $_SESSION['login']
+			'id' => $_COOKIE['login']
 		]);
 		if (external_mail(false, $data->send_indiv, $data->from, $data->company_name, $email_list, $data->subject, $template, $data->template_id, $data->to)) {
 			http_response_code(200); die(); 
@@ -324,23 +341,18 @@ if ($action == "setup_smtp") {
 	$mail->Username = $data->username;
 	$mail->Password = $data->password;
 	$mail->isSMTP();
-	if (get_client_ip() == "::1") {
-		$mail->SMTPOptions = array(
-			'ssl' => array(
-				'verify_peer' => false,
-				'verify_peer_name' => false,
-				'allow_self_signed' => true
-			)
-		);
-	}
+	$mail->Timeout = 1;
 	$mail->SMTPAuth = true;
-	$mail->SMTPSecure = ($data->ssl ? 'ssl' : 'tls');
-	$mail->SMTPDebug = 3;
+	$mail->SMTPtype = "LOGIN";
+	$mail->SMTPSecure = ($data->ssl ? 'ssl' : 'starttls');
+	$mail->SMTPDebug = 2;
 	$mail->setFrom($data->username);
 	if (!$mail->smtpConnect()) {
+		unset($mail);
 		http_response_code(201); die();
 	}
 	$mail->smtpClose();
+	unset($mail);
 
 	$update = $DB->update('tbl_users', [
 		'smtp_host' => $data->host,
@@ -349,8 +361,8 @@ if ($action == "setup_smtp") {
 		'smtp_port' => $data->port,
 		'smtp_ssl' => $data->ssl
 	], [
-		'login_token' => $_SESSION['token'],
-		'id' => $_SESSION['login']
+		'login_token' => $_COOKIE['token'],
+		'id' => $_COOKIE['login']
 	]);
 	if ($update) { http_response_code(200); die(); } else { http_response_code(202); die(); }
 }

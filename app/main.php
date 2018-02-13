@@ -9,15 +9,26 @@ use Medoo\Medoo;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
+ini_set('memory_limit','124M');
+
 session_start();
 
-// Initialize DB
+// // Initialize DB
+// $DB = new Medoo([
+//     'database_type' => 'mysql',
+//     'database_name' => 'vuemailer',
+//     'server' => 'localhost',
+//     'username' => 'root',
+//     'password' => ''
+// ]);
+
+// LIVE
 $DB = new Medoo([
     'database_type' => 'mysql',
-    'database_name' => 'vuemailer',
-    'server' => 'localhost',
-    'username' => 'root',
-    'password' => ''
+    'database_name' => 'ocidb_Kt9w151576',
+    'server' => '213.171.200.90',
+    'username' => 'vuemailer',
+    'password' => '@Un1c0rns!'
 ]);
 
 $site_path = "https://localhost/";
@@ -44,13 +55,13 @@ function get_client_ip () {
 function logged_in () {
 	global $DB;
 	if (isset($DB)) {
-		if (!isset($_SESSION['login']) && !isset($_SESSION['token'])) { die('Unauthorised!'); }
+		if (!isset($_COOKIE['login']) && !isset($_COOKIE['token'])) { die('Unauthorised! #000'); }
 		else {
-			$user = $DB->get('tbl_users', '*', ['id' => $_SESSION['login']]);
-			if ($user['login_token'] != $_SESSION['token']) { die('Unauthorised!'); }
-			if ($user['ip_address'] != get_client_ip()) { die('Unauthorised!'); }
+			$user = $DB->get('tbl_users', '*', ['id' => $_COOKIE['login']]);
+			if ($user['login_token'] != $_COOKIE['token']) { die('Unauthorised! #001'); }
+			if ($user['ip_address'] != get_client_ip()) { die('Unauthorised! #002'); }
 		}
-	} else { die('Unauthorised!'); }
+	} else { die('Unauthorised! #003'); }
 }
 
 function gen_token ($length = 10) {
@@ -90,23 +101,28 @@ function decrypt_string ($string, $key = '@Un1c0rns!') {
 
 function is_verified() {
 	global $DB;
-	if (isset($_SESSION['login'])) {
-		return $DB->get('tbl_users', 'date_verified', ['id'=>$_SESSION['login']]) ? true : false;
+	if (isset($_COOKIE['login'])) {
+		return $DB->get('tbl_users', 'date_verified', ['id'=>$_COOKIE['login']]) ? true : false;
 	}
 }
 
 function internal_mail ($subject, $body, $to) {
 	global $DB;
-	$from = "from@test.com";
 	$mail = new PHPMailer;
-	$mail->setFrom('from@test.com', 'VueMailer');
+	$from = "no-reply@wisemailer.com";
+	$mail->setFrom('no-reply@wisemailer.com', 'Wise Mailer');
 	$mail->addAddress($to);
+	$mail->Host = 'smtp.livemail.co.uk';
+	$mail->Port = 587;
+	$mail->SMTPSecure = 'tsl';
+	$mail->SMTPAuth = true;
+	$mail->Username = $from;
+	// $mail->SMTPDebug = 3;
+	$mail->Password = "Killer123!";
+	$mail->isSMTP();
+	$mail->isHTML();
 	$mail->Subject = $subject;
 	$mail->Body = $body;
-	$mail->isHTML();
-	/*
-		SMPT DETAILS TO GO HERE ON SETUP OF RELEASE
-	*/
 	$DB->insert('tbl_email_logs', [
 		'content' => $body,
 		'from' => $from,
@@ -129,7 +145,7 @@ function external_mail ($test, $individual, $from, $company, $to, $subject, $bod
 		'smtp_password', 
 		'smtp_port',
 		'smtp_ssl'
-	], ['id' => $_SESSION['login']]);
+	], ['id' => $_COOKIE['login']]);
 	if ($user) {
 		$mail = new PHPMailer;
 		$mail->Host = $user['smtp_host'];
@@ -148,15 +164,16 @@ function external_mail ($test, $individual, $from, $company, $to, $subject, $bod
 			);
 		}
 		$mail->SMTPAuth = true;
+		$mail->AuthType = "LOGIN";
 		$mail->SMTPSecure = ($user['smtp_ssl'] ? 'ssl' : 'tls');
-		$mail->SMTPDebug = 3;
+		// $mail->SMTPDebug = 3;
 		$mail->setFrom($from, $company);
 		$mail->Subject = $subject;
 		$mail->Body = $body;
 
 		$DB->insert('tbl_email_logs', [
 			'content' => $body,
-			'user_id' => $_SESSION['login'],
+			'user_id' => $_COOKIE['login'],
 			'template_id' => $template_id,
 			'list_id' => $list_id
 		]);

@@ -323,7 +323,7 @@ var vm = new Vue({
 					if (response.status == 200) {
 						this.email_templates.push({ id:response.body.id, name:this.new_template_name });
 						this.email_template_selected = response.body.id;
-						this.email_code = new Array();
+						this.email_code = "";
 						this.toggle_edit_email_template(false);
 						this.new_template_name = "";
 					} else if (response.status == 202) {
@@ -474,14 +474,7 @@ var vm = new Vue({
 				password: this.password
 			}).then(response => {
 				if (response.status == 200) {
-					this.email = "";
-					this.password = "";
-					this.con_password = "";
-					this.error.active = false;
-					this.error2.active = false;
-					this.error3.active = false;
-					this.setup_user_with_response(response);
-					this.reset_login(3);
+					location.reload();
 				} else if (response.status == 202) {
 					this.do_error("This account has been locked! An email was sent to this account with further instructions.");
 				} else {
