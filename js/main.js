@@ -24,6 +24,7 @@ options = {
 var vm = new Vue({
 	el: '#app',
 	data: {
+		app_ready: false,
 		login: 1,
 		email: "",
 		password: "",
@@ -76,6 +77,7 @@ var vm = new Vue({
 			} else if (response.status == 202) {
 				this.reset_login(1);
 			}
+			setTimeout(function() { vm.app_ready = true; }, 500);
 		});
 	},
 	methods: {
@@ -288,7 +290,6 @@ var vm = new Vue({
 						this.email_code = response.body[0].template;
 						this.email_code_old = this.email_code;
 						this.email_template_changed = false;
-						$('#code_container').html('<textarea id="code_editor" v-on:keyup="change_template_state" class="c-code-container" placeholder="Email body code. Handtype or select from the template above.">' + this.email_code + '</textarea><script>var editor = CodeMirror.fromTextArea(document.getElementById("code_editor"), {mode: "htmlmixed", htmlMode:true, theme: "monokai", lineNumbers: true});</script>');
 					} else if (response.status == 202) {
 						this.email_code = "";
 					} else {
@@ -299,7 +300,6 @@ var vm = new Vue({
 		},
 		format_template: function() {
 			this.email_code = tidy_html5(this.email_code, options);
-			$('#code_container').html('<textarea id="code_editor" v-on:keyup="change_template_state" class="c-code-container" placeholder="Email body code. Handtype or select from the template above.">' + this.email_code + '</textarea><script>var editor = CodeMirror.fromTextArea(document.getElementById("code_editor"), {mode: "htmlmixed", htmlMode:true, theme: "monokai", lineNumbers: true});</script>');
 			this.email_template_changed = true;
 		},
 		save_template: function() {
@@ -622,4 +622,14 @@ $(function() {
 			}
 		}
 	});
+
+	var loading = setInterval(function() {
+		if (vm.app_ready) {
+			$('#app_buffer').fadeIn();
+			clearInterval(loading);
+			console.log('loaded');
+		}
+	}, 100);
+		
+
 });

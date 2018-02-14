@@ -5,7 +5,7 @@
 
 html, body {
 	overflow-y: auto;
-	background-color: #222;
+	background-color: #eee;
 	color:#eee;
 	font-family: 'Open Sans', sans-serif;
 }
@@ -29,6 +29,10 @@ html, body {
 }
 :-moz-placeholder { /* Firefox 18- */
   color: #a6c0c4;
+}
+
+#app_buffer {
+	display:none;
 }
 
 footer {
@@ -135,11 +139,12 @@ button:hover {
 .o-user-menu {
 	margin-bottom:8px;
 	position:static;
-	background-color:#EEE;
+	background-color:#d1d1d1;
 }
 
 .o-settings-container, .o-history-container {
 	color:#888;
+	background-color:#DDD;
 	padding:10px;
 }
 
@@ -151,7 +156,7 @@ button:hover {
 .o-settings-container h2 {
 	margin:2px;
 	margin-top:10px;
-	background-color:#EEE;
+	background-color:#DDD;
 	color:#666;
 	border-bottom:2px #DDD solid;
 }
@@ -159,6 +164,7 @@ button:hover {
 .o-settings-container p {
 	margin-top:2px;
 	padding-left:1px;
+	margin-bottom:0px;
 }
 
 .o-hist-item {
@@ -190,7 +196,7 @@ button:hover {
 .o-user-menu h3 {
 	margin:0px;
 	color:#999;
-	background-color:#DDD;
+	background-color:#d1d1d1;
 	padding:4px;
 }
 
@@ -201,6 +207,17 @@ button:hover {
 }
 
 .c-text-btn:hover {
+	text-decoration: underline;
+	color:var(--accent-hl-col);
+}
+
+.c-footer-btn {
+	float:right;
+	cursor: pointer;
+	color:var(--accent-col);
+}
+
+.c-footer-btn:hover {
 	text-decoration: underline;
 	color:var(--accent-hl-col);
 }
@@ -322,12 +339,19 @@ button:hover {
 }
 
 .c-menu-btn {
-	background-color: #DDD;
+	background-color: #d1d1d1;
     padding: 8px;
     padding-bottom: 4px;
     height: 18px;
     display: inline-block;
-    cursor: pointer;
+	cursor: pointer;
+	-webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
 }
 
 /* The switch - the box around the slider */
