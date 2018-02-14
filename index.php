@@ -7,7 +7,11 @@ if($_SERVER["HTTPS"] != "on") {
 
 <html> 
   <head>
-		<title>Vue Mailer</title>
+		<title>Wisemailer.com</title>
+
+		<meta name="Description" content="Wisemailer.com provides a free to use web-based tool that offers small & medium sized businesses the ability to seemingly send emails to their customers. Fully responsive for both mobile/tablet and desktop usage. Join now for FREE at no cost, premium features available.">
+		<meta name="Keywords" content="wisemailer, wise, mailer, smtp, freware, online tool, mailer, email, email templates, templates">
+
 		<meta name="viewport" content="initial-scale=1, maximum-scale=1">
 		<meta charset="utf-8">
 
@@ -15,6 +19,9 @@ if($_SERVER["HTTPS"] != "on") {
 		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
 		<link href="https://use.fontawesome.com/releases/v5.0.1/css/all.css" rel="stylesheet">
 		<link rel="stylesheet" type="text/css" href="css/stylesheet.css">
+
+		<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="icon" href="/favicon.ico" type="image/x-icon">
   </head>
   <body>
 
@@ -231,17 +238,24 @@ if($_SERVER["HTTPS"] != "on") {
 							<p v-if="email_code == ''">Nothing to display.</p>
 							<iframe v-if="email_code != ''" v-bind:srcdoc="email_code" id="previewContainer" class="o-flex-box c-preview-container"></iframe>
 							<br>
-							<button v-if="login === 3 && !verify_required && !smtp_setup" @click="send_all" class="u-snd-btn">
-								<span v-if="!send_loading"><i class="fab fa-telegram-plane fa-lg"></i></span>
-								<span v-else><img src="imgs/loading.gif"></span>
-							</button>
+							<div class="o-action-btns">
+								<button v-if="login === 3 && !verify_required && !smtp_setup" @click="send_all" class="u-snd-btn">
+									<span v-if="!send_loading"><i class="fab fa-telegram-plane fa-lg"></i> Send</span>
+									<span v-else><img src="imgs/loading.gif"></span>
+								</button>
 
-							<button v-if="login === 3 && !verify_required && !smtp_setup" @click="send_preview" class="u-snd-btn">
-								<span v-if="!preview_loading">Preview</span>
-								<span v-else><img src="imgs/loading.gif"></span>
-							</button>
+								<button v-if="login === 3 && !verify_required && !smtp_setup" @click="send_preview" class="u-snd-btn u-float-left">
+									<span v-if="!preview_loading"><i class="fas fa-eye"></i> Preview</span>
+									<span v-else><img src="imgs/loading.gif"></span>
+								</button>
 
-							<span class="u-snd-btn u-check-fix" v-if="login === 3 && !verify_required && !smtp_setup"><input type="checkbox" v-model="send_indiv">Send separately</span></br>
+								<button v-if="login === 3 && !verify_required && !smtp_setup" @click="send_all" class="u-snd-btn">
+									<span v-if="!send_loading"><i style="margin-right:4px;" class="far fa-calendar-alt fa-lg"></i> Schedule</span>
+								</button>
+
+								<span class="u-snd-btn u-check-fix" v-if="login === 3 && !verify_required && !smtp_setup"><input type="checkbox" v-model="send_indiv">Send separately</span></br>
+							</div>
+
 						</div>
 
 					</div>

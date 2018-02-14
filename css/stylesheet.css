@@ -329,13 +329,21 @@ button:hover {
 	color:#54888c;
 }
 
-.fa-telegram-plane {
+.fa-telegram-plane, .fa-calendar-alt {
 	padding:3px 2px 3px 0px;
+}
+
+.fa-calendar-alt {
+	float:left;
 }
 
 .fa-history:active {
 	transition:0.1s all ease;
 	transform:scale(0.9);
+}
+
+.o-action-btns {
+    height: auto;
 }
 
 .c-menu-btn {
@@ -577,5 +585,8 @@ input:checked + .slider:before {
 @media only screen and (max-width: 768px) {
   #main {
 		width:auto;
+	}
+	.o-action-btns {
+		height: 45px;
 	}
 }
