@@ -11,7 +11,7 @@ options = {
 	"numeric-entities":true,
 	"quote-marks":false,
 	"quote-nbsp":false,
-	"show-body-only":false,
+	"show-body-only":false, 
 	"quote-ampersand":false,
 	"break-before-br":true,
 	"uppercase-tags":false,
@@ -34,10 +34,12 @@ var vm = new Vue({
 		reg_company_name: "",
 		email_list: new Array(),
 		your_email_list : new Array(),
+
 		email_list_selected: "blank",
 		email_template_selected: "blank",
 		email_template_old: "blank",
-		email_templates: new Array(),
+		user_templates: new Array(),
+
 		history: new Array(),
 		email_code: "",
 		email_code_old: "",
@@ -46,6 +48,11 @@ var vm = new Vue({
 		new_template_name: "",
 		editing_email_list: false,
 		editing_email_template: false,
+
+		view_templates: false,
+		templates: new Array(),
+		template_selected: 0,
+
 		verify_required: true,
 		smtp_setup: true,
 		smtp_host: '',
@@ -120,9 +127,14 @@ var vm = new Vue({
 					this.your_email_list.push(response.body.available_email_lists[i]);
 				}
 				
-				this.email_templates = new Array();
+				this.user_templates = new Array();
+				for (var i = 0, len = response.body.user_templates.length; i < len; i++) {
+					this.user_templates.push({id:response.body.user_templates[i].id, name:response.body.user_templates[i].name});
+				}
+
+				this.templates = new Array();
 				for (var i = 0, len = response.body.templates.length; i < len; i++) {
-					this.email_templates.push({id:response.body.templates[i].id, name:response.body.templates[i].name});
+					this.templates.push({id:response.body.templates[i].id, name:response.body.templates[i].name, content:response.body.templates[i].content, premium:response.body.templates[i].premium});
 				}
 				
 				this.history = new Array();
@@ -280,6 +292,7 @@ var vm = new Vue({
 					var r = confirm("You have unsaved changes are you sure you want to change templates?");
 					if (r != true) {
 						this.email_template_selected = this.email_template_old;
+						this.email_template_changed = false;
 						return false;
 					}
 				}
@@ -317,22 +330,33 @@ var vm = new Vue({
 		},
 		new_template: function() {
 			if (this.new_template_name != '') {
-				this.$http.post('app/actions.php?a=new_template', {
-					name: this.new_template_name
-				}).then(response => {
-					if (response.status == 200) {
-						this.email_templates.push({ id:response.body.id, name:this.new_template_name });
-						this.email_template_selected = response.body.id;
-						this.email_code = "";
-						this.toggle_edit_email_template(false);
-						this.new_template_name = "";
-					} else if (response.status == 202) {
-						this.do_error2("Template already exists with this name.");
-					}
-				});
+				if (this.template_selected != 0) {
+					this.$http.post('app/actions.php?a=new_template', {
+						name: this.new_template_name,
+						template: this.template_selected
+					}).then(response => {
+						if (response.status == 200) {
+							this.user_templates.push({ id:response.body.id, name:this.new_template_name });
+							this.email_template_selected = response.body.id;
+							this.email_code = response.body.code;
+							this.new_template_name = "";
+							this.template_selected = 0;
+							this.view_template_list(false);
+						} else if (response.status == 202) {
+							this.do_error2("Template already exists with this name.");
+						}
+					});
+				} else {
+					this.do_error2("You must select a template style.");
+				}
 			} else {
 				this.do_error2("Template name cannot be empty.");
 			}
+			this.view_templates = true;
+		},
+		view_template_list: function(val) {
+			this.view_templates = val;
+			this.editing_email_template = val;
 		},
 		delete_template: function() {
 			var r = confirm("Are you sure you want to permanently delete this template?");
@@ -341,9 +365,9 @@ var vm = new Vue({
 					id: this.email_template_selected
 				}).then(response => {
 					if (response.status == 200) {
-						for (var i = 0, len = this.email_templates.length; i < len; i++) {
-							if (this.email_templates.hasOwnProperty(i) && this.email_templates[i].id == this.email_template_selected) {
-								this.email_templates.splice(i, 1);
+						for (var i = 0, len = this.user_templates.length; i < len; i++) {
+							if (this.user_templates.hasOwnProperty(i) && this.user_templates[i].id == this.email_template_selected) {
+								this.user_templates.splice(i, 1);
 							}
 						}
 						this.email_template_selected = "blank";
@@ -621,6 +645,16 @@ $(function() {
 					break;
 			}
 		}
+	});
+
+	$(document).on('click', '.c-template-itm', function() {
+
+		$('.c-template-itm').each(function() {
+			$(this).removeClass('c-template-itm-sel');
+		});
+
+		$(this).addClass('c-template-itm-sel');
+		vm.template_selected = $(this).attr('value');
 	});
 
 	var loading = setInterval(function() {

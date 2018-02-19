@@ -31,6 +31,7 @@ if($_SERVER["HTTPS"] != "on") {
 				<img src="imgs/loading2.gif" style="margin-top:200px; height:120px; width:120px;">
 			</div>
 			<div id="app_buffer" v-if="app_ready">
+
 				<img v-if="login !== 3" src="imgs/logo.png" class="c-logo">
 
 				<!-- FORGOT PASSWORD -->
@@ -202,30 +203,35 @@ if($_SERVER["HTTPS"] != "on") {
 
 						<!-- TEMPLATE PICKER / EDITOR -->
 						<div class="o-color-box u-bg-color-grey">
-							<h6 class="o-title">Email Template</h6>
+							<h6 class="o-title">Email Body</h6>
 
 							<div id="codeConatiner" class="o-flex-box">
 
 								<select v-if="!editing_email_template" v-on:click="template_change_click" v-on:change="change_template" v-model="email_template_selected">
 									<option value="blank" selected>-</option>
-									<option v-for="template in email_templates" v-bind:value="template.id">{{template.name}}</option>
+									<option v-for="template in user_templates" v-bind:value="template.id">{{template.name}}</option>
 								</select>
 
 								<input v-else class="u-bg-color-grey2 u-white-txt" type="text" v-model="new_template_name" placeholder="Template name">
 
+								
 								<button class="c-icon-btn" v-if="editing_email_template" v-on:click="new_template"><i class="fas fa-check"></i></button>
-								<button class="c-icon-btn" v-else v-on:click="toggle_edit_email_template(true)"><i class="fas fa-plus"></i></button>
-								<button class="c-icon-btn u-delete-btn" v-if="editing_email_template" v-on:click="toggle_edit_email_template(false)"><i class="fas fa-times"></i></button>
+								<button class="c-icon-btn u-delete-btn" v-if="editing_email_template" v-on:click="view_template_list(false)"><i class="fas fa-times"></i></button>
+								<button class="c-icon-btn" v-else v-on:click="view_template_list(true)"><i class="fas fa-plus"></i></button>
 								<button v-on:click="delete_template" class="c-icon-btn u-delete-btn" v-if="email_template_selected != 'blank' && editing_email_template == false"><i class="fas fa-trash-alt"></i></button>
+								
+								<button title="Save Changes" v-if="email_template_changed && !editing_email_template" v-on:click="save_template" class="c-icon-btn u-float-right"><i class="fas fa-save"></i></button>
+								<span v-if="email_template_changed  && !editing_email_template" class="u-error u-float-right u-margin-left-10">*</span>
 
-								<button title="Save Changes" v-if="email_template_changed" v-on:click="save_template" class="c-icon-btn u-float-right"><i class="fas fa-save"></i></button>
-								<span v-if="email_template_changed" class="u-error u-float-right u-margin-left-10">*</span>
-
-								<button title="Format Code" v-if="email_code != ''" v-on:click="format_template" class="c-icon-btn u-float-right"><i class="fas fa-file-code"></i></button>
+								<button title="Format Code" v-if="email_code != '' && !editing_email_template" v-on:click="format_template" class="c-icon-btn u-float-right"><i class="fas fa-file-code"></i></button>
 
 								<span v-if="error2.active" class="u-error">{{ error2.msg }}</span>
 								
-								<div v-if="email_template_selected != 'blank'" id="code_container">
+								<div class="c-templates-view-container" v-if="view_templates">
+									<div v-for="template_item in templates" v-bind:value="template_item.id" class="c-template-itm"><span>{{ template_item.name }}</span></div>
+								</div>
+
+								<div v-if="email_template_selected != 'blank' && !editing_email_template" id="code_container">
 									<textarea id="code_editor" v-model='email_code' v-on:keyup="change_template_state" class="c-code-container" placeholder="Email body code. Handtype or select from the template above.">{{email_code}}</textarea>
 								</div>
 							
@@ -249,9 +255,9 @@ if($_SERVER["HTTPS"] != "on") {
 									<span v-else><img src="imgs/loading.gif"></span>
 								</button>
 
-								<button v-if="login === 3 && !verify_required && !smtp_setup" @click="send_all" class="u-snd-btn">
+								<!-- <button v-if="login === 3 && !verify_required && !smtp_setup" @click="send_all" class="u-snd-btn">
 									<span v-if="!send_loading"><i style="margin-right:4px;" class="far fa-calendar-alt fa-lg"></i> Schedule</span>
-								</button>
+								</button> -->
 
 								<span class="u-snd-btn u-check-fix" v-if="login === 3 && !verify_required && !smtp_setup"><input type="checkbox" v-model="send_indiv">Send separately</span></br>
 							</div>
@@ -260,7 +266,7 @@ if($_SERVER["HTTPS"] != "on") {
 
 					</div>
 					<!-- FOOTER -->
-					<footer><b>Copyright © <b>Author</b> Wise Web Solutions | 2017 - 2018 <span v-if="login === 3" @click="onLogout" class="c-footer-btn">Logout</span></footer>
+					<footer><b>Copyright © <b>Author</b> Wise Web Solutions | 2017 - 2018 <a class="c-footer-btn" href="../index.html">Home</a><span v-if="login === 3" @click="onLogout" class="c-footer-btn">Logout</span></footer>
 				</div>
 
 			</div>

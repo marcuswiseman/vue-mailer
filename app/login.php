@@ -8,7 +8,8 @@ function prepare_user () {
 	global $DB;
 	$user = $DB->select('tbl_users', ['id', 'email', 'company_name', 'temp_password', 'login_token', 'ip_address', 'date_verified', 'smtp_host', 'smtp_username', 'smtp_password', 'smtp_port', 'smtp_ssl'], ['id' => $_COOKIE['login']]);
 	$email_lists = $DB->select('tbl_users_email_lists', ['id', 'name'], ['user_id' => $_COOKIE['login'], 'date_deleted' => NULL]);
-	$templates = $DB->select('tbl_users_email_templates', ['id', 'name', 'template'], ['user_id' => $_COOKIE['login'], 'date_deleted' => NULL]);
+	$user_templates = $DB->select('tbl_users_email_templates', ['id', 'name', 'template'], ['user_id' => $_COOKIE['login'], 'date_deleted' => NULL]);
+	$templates = $DB->select('tbl_templates', '*');
 	
 	$history = $DB->query(
 		"SELECT 
@@ -52,7 +53,8 @@ function prepare_user () {
 	}
 
 	if (isset($email_lists)) { $user['available_email_lists'] = $email_lists; }
-	if (isset($templates)) { $user['templates'] = $templates; }
+	if (isset($user_templates)) { $user['user_templates'] = $user_templates; }
+	if (isset($templates)) { $user['templates'] = $templates; } 
 	if (isset($history)) { $user['history'] = $history; }
 	return $user;
 }

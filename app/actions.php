@@ -74,6 +74,16 @@ if ($action == "api") {
 	}
 }
 
+if ($action == "contact_us") {
+	if (isset($_POST['name']) && isset($_POST['email']) && isset($_POST['message'])) {
+		$body = "{$_POST['name']} has left you the following message: <br></br>" . $_POST['message'] . "<Br></br> Email: {$_POST['email']} <br></br> Regards";
+		$sent = internal_mail("Wisemailer.com - You've been contacted!", $body, "marcusdean11@hotmail.co.uk");
+		http_response_code(200); die("Thank you for leaving a message, we'll get back to you as soon as possible!");
+	} else {
+		http_response_code(201); die('Error #131: You must complete all fields.');
+	}
+}
+
 /* ------------------------ LOGGED IN ONLY FUNCTIONS ------------------------ */
 logged_in();
 
@@ -171,12 +181,14 @@ if ($action == "new_email_list") {
 # NEW TEMPLATE
 if ($action == "new_template") {
 	$check = $DB->select('tbl_users_email_templates', '*', ['name' => $data->name, 'user_id' => $_COOKIE['login'], 'date_deleted' => NULL]);
+	$template = $DB->get('tbl_templates', 'content', ['id' => $data->template]);
 	if (!$check) {
 		$DB->insert('tbl_users_email_templates', [
 			'user_id' => $_COOKIE['login'],
-			'name' => htmlspecialchars($data->name)
+			'name' => htmlspecialchars($data->name),
+			'template' => $template
 		]);
-		http_response_code(200); die(json_encode( ['id' => $DB->id()] ));
+		http_response_code(200); die(json_encode( ['id' => $DB->id(), 'code' => $template] ));
 	} else {
 		http_response_code(202); die();
 	}

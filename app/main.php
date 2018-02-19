@@ -9,27 +9,29 @@ use Medoo\Medoo;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-ini_set('memory_limit','124M');
+require 'TemplateEditor.php'; 
+
+// ini_set('memory_limit','124M');
 
 session_start();
 
-// // Initialize DB
-// $DB = new Medoo([
-//     'database_type' => 'mysql',
-//     'database_name' => 'vuemailer',
-//     'server' => 'localhost',
-//     'username' => 'root',
-//     'password' => ''
-// ]);
-
-// LIVE
+// // // Initialize DB
 $DB = new Medoo([
     'database_type' => 'mysql',
-    'database_name' => 'ocidb_Kt9w151576',
-    'server' => '213.171.200.90',
-    'username' => 'vuemailer',
-    'password' => '@Un1c0rns!'
+    'database_name' => 'vuemailer',
+    'server' => 'localhost',
+    'username' => 'root',
+    'password' => ''
 ]);
+
+// LIVE
+// $DB = new Medoo([
+//     'database_type' => 'mysql',
+//     'database_name' => 'ocidb_Kt9w151576',
+//     'server' => '213.171.200.90',
+//     'username' => 'vuemailer',
+//     'password' => '@Un1c0rns!'
+// ]);
 
 $site_path = "https://localhost/";
 
@@ -76,7 +78,7 @@ function gen_token ($length = 10) {
 
 function get_post () {
 	$json = file_get_contents('php://input');
-	return isset($json) ? json_decode($json) : null;
+	return isset($json) ? json_decode($json) : $_POST;
 }
 
 function encrypt_string ($string, $key = '@Un1c0rns!') {
