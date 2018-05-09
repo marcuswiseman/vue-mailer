@@ -213,33 +213,46 @@ if($_SERVER["HTTPS"] != "on") {
 								</select>
 
 								<input v-else class="u-bg-color-grey2 u-white-txt" type="text" v-model="new_template_name" placeholder="Template name">
-
+								
 								
 								<button class="c-icon-btn" v-if="editing_email_template" v-on:click="new_template"><i class="fas fa-check"></i></button>
 								<button class="c-icon-btn u-delete-btn" v-if="editing_email_template" v-on:click="view_template_list(false)"><i class="fas fa-times"></i></button>
 								<button class="c-icon-btn" v-else v-on:click="view_template_list(true)"><i class="fas fa-plus"></i></button>
 								<button v-on:click="delete_template" class="c-icon-btn u-delete-btn" v-if="email_template_selected != 'blank' && editing_email_template == false"><i class="fas fa-trash-alt"></i></button>
 								
+								
 								<button title="Save Changes" v-if="email_template_changed && !editing_email_template" v-on:click="save_template" class="c-icon-btn u-float-right"><i class="fas fa-save"></i></button>
-								<span v-if="email_template_changed  && !editing_email_template" class="u-error u-float-right u-margin-left-10">*</span>
+								<span v-if="email_template_changed  && !editing_email_template" class="u-error u-save-star u-float-right u-margin-left-10">*</span>
+								
+								<!-- <button title="Format Code" v-if="email_code != '' && !editing_email_template && code_view" v-on:click="format_template" class="c-icon-btn u-float-right c-element-action-btn"><i class="fas fa-file-code"></i></button> -->
+								
+								<!-- EDITING ELEMENT ITEMS -->
+								<button title="Delete" class="c-el-delete c-element-action-btn" v-if="changing_element"><i class="x-no-exit fas fa-trash"></i></button>
+								<button title="Font" class="c-element-action-btn" v-if="changing_element"><i class="x-no-exit fas fa-font"></i></button>
+								<button title="Colors" class="c-element-action-btn" v-if="changing_element"><i class="x-no-exit fas fa-paint-brush"></i></button>
+								<button title="Padding" class="c-element-action-btn" v-if="changing_element"><i class="x-no-exit fas fa-expand-arrows-alt"></i></button>
 
-								<button title="Format Code" v-if="email_code != '' && !editing_email_template" v-on:click="format_template" class="c-icon-btn u-float-right"><i class="fas fa-file-code"></i></button>
+								<!-- EDITING ELEMENT ITEMS -->
+
+								<button title="Switch to Code Editor" class="c-switch-to-code c-icon-btn" v-if="email_code != '' && !editing_email_template && !changing_element && !code_view && email_template_selected != 0 && email_template_selected != 'blank'"><i class="fas fa-code"></i></button>
+								<button title="Switch to Visual Editor" class="c-switch-to-visual c-icon-btn" v-if="email_code != '' && !editing_email_template && !changing_element && code_view && email_template_selected != 0 && email_template_selected != 'blank'"><i class="fas fa-th-large"></i></button>
 
 								<span v-if="error2.active" class="u-error">{{ error2.msg }}</span>
 								
 								<div class="c-templates-view-container" v-if="view_templates">
-									<div v-for="template_item in templates" v-bind:value="template_item.id" class="c-template-itm"><span>{{ template_item.name }}</span></div>
+									<div v-for="template_item in templates" v-bind:value="template_item.id" class="c-template-itm"><span>{{ template_item.name }}<img v-bind:src="template_item.img"></span></div>
 								</div>
 
 								<div v-if="email_template_selected != 'blank' && !editing_email_template" id="code_container">
-									<textarea id="code_editor" v-model='email_code' v-on:keyup="change_template_state" class="c-code-container" placeholder="Email body code. Handtype or select from the template above.">{{email_code}}</textarea>
+									<textarea v-if="code_view" id="code_editor" v-model='email_code' v-on:keyup="change_template_state" class="c-code-container" placeholder="Email body code. Handtype or select from the template above.">{{email_code}}</textarea>
+									<div v-else id="template_editor" v-html="email_code" class="c-editor-container"></div>
 								</div>
 							
 							</div>
 						</div>
 
 						<!-- TEMPLATE PREVIEW -->
-						<div class="o-color-box u-bg-color-grey">
+						<div v-if="email_template_selected != 0 && email_template_selected != 'blank' " class="o-color-box u-bg-color-grey">
 							<h6 class="o-title">Preview</h6>
 							<p v-if="email_code == ''">Nothing to display.</p>
 							<iframe v-if="email_code != ''" v-bind:srcdoc="email_code" id="previewContainer" class="o-flex-box c-preview-container"></iframe>

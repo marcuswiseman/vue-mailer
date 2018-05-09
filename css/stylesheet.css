@@ -255,6 +255,13 @@ button:hover {
 	border:2px dashed white;
 }
 
+.c-element-action-btn {
+	float: right;
+    position: relative;
+    top: 4px;
+	height: 29px;
+}
+
 .c-template-itm-sel {
 	border: 2px solid #54888c !important;
 	transform:scale(0.95) !important;
@@ -266,6 +273,14 @@ button:hover {
 	font-size:8pt;
     left: 0;
     right: 0;
+}
+
+.c-template-itm img {
+	width: 100%;
+    height: 100%;
+    opacity: 0.6;
+    position: relative;
+    top: 16px;+
 }
 
 .c-cornered-field {
@@ -317,8 +332,10 @@ button:hover {
 	background-color: #cc5757;
 }
 
-.c-code-container {
-	background-color: #444;
+.c-code-container, .c-editor-container {
+	padding:5px 10px;
+	color:black;
+	background-color: white;
 	font-family: monospace;
 	font-size: 14px;
 	font-style: normal;
@@ -326,6 +343,45 @@ button:hover {
 	font-weight: 400;
 	line-height: 20px;
 }
+
+.c-editor-container p, 
+.c-editor-container h1, 
+.c-editor-container h2, 
+.c-editor-container h3, 
+.c-editor-container h4, 
+.c-editor-container h5, 
+.c-editor-container h6, 
+.c-editor-container span,
+.c-editor-container a,
+.c-editor-container div {
+	border:1px dashed #999;
+	outline:none;
+	transition:0.2s all ease;
+	padding:5px;
+}
+
+.c-editor-container p, 
+.c-editor-container h1, 
+.c-editor-container h2, 
+.c-editor-container h3, 
+.c-editor-container h4, 
+.c-editor-container h5, 
+.c-editor-container h6, 
+.c-editor-container span,
+.c-editor-container a {
+	border:1px dashed #999;
+	outline:none;
+	transition:0.2s all ease;
+	padding:5px;
+}
+
+.u-editing {
+	border: 1px solid #999;
+	background-color:#eee;
+	transition:0.2s all ease;	
+	color:black;
+}
+
 
 .c-preview-container {
 	height: 500px;
@@ -608,6 +664,10 @@ input:checked + .slider:before {
 	position: relative;
 	top:4px;
 	float:right;
+}
+
+.u-save-star {
+	height:20px;
 }
 
 .u-no-select {
